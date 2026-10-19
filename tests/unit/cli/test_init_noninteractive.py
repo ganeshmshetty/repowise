@@ -239,7 +239,7 @@ class TestProseFlag:
 
         resolver = Mock(return_value=None)
         monkeypatch.setattr(
-            "repowise.cli.commands.init_cmd.command.resolve_provider", resolver
+            "repowise.cli.commands.init_cmd._prepare.resolve_provider", resolver
         )
         result = runner.invoke(cli, ["init", str(tmp_path), *flags, "--yes"])
         assert result.exit_code == 0, result.output
@@ -253,7 +253,7 @@ class TestProseFlag:
 
         resolver = Mock(return_value=None)
         monkeypatch.setattr(
-            "repowise.cli.commands.init_cmd.command.resolve_provider", resolver
+            "repowise.cli.commands.init_cmd._prepare.resolve_provider", resolver
         )
         flags = ["--provider", "openai"] if opt_in == "provider" else []
         if opt_in == "key":
@@ -388,7 +388,7 @@ class TestAdvancedExcludeMergesWithFlag:
         import subprocess
         from unittest import mock
 
-        from repowise.cli.commands.init_cmd import command
+        from repowise.cli.commands.init_cmd import _prepare, _questions
 
         repo = tmp_path / "repo"
         (repo / "vendor").mkdir(parents=True)
@@ -412,13 +412,13 @@ class TestAdvancedExcludeMergesWithFlag:
             return False
 
         with (
-            mock.patch.object(command, "_interactive_gate", lambda **_: True),
-            mock.patch.object(command, "interactive_mode_select", lambda _c: "advanced"),
-            mock.patch.object(command, "interactive_generate_docs_toggle", lambda _c: False),
+            mock.patch.object(_prepare, "_interactive_gate", lambda **_: True),
+            mock.patch.object(_questions, "interactive_mode_select", lambda _c: "advanced"),
+            mock.patch.object(_questions, "interactive_generate_docs_toggle", lambda _c: False),
             mock.patch.object(
-                command, "interactive_advanced_config", lambda *a, **k: dict(answers)
+                _questions, "interactive_advanced_config", lambda *a, **k: dict(answers)
             ),
-            mock.patch.object(command, "_confirm_wiki_overwrite", _stop_after_settings),
+            mock.patch.object(_prepare, "_confirm_wiki_overwrite", _stop_after_settings),
         ):
             result = CliRunner().invoke(cli, ["init", str(repo), *args])
 
